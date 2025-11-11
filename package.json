@@ -1,0 +1,29 @@
+{
+	"name": "talkmateai",
+	"version": "1.0.0",
+	"description": "",
+	"scripts": {
+		"monorepo-setup": "pnpm install && pnpm --filter @talkmateai/server exec uv sync",
+		"dev": "concurrently \"pnpm run dev:client\" \"pnpm run dev:server\"",
+		"dev:client": "pnpm --filter @talkmateai/client dev",
+		"dev:server": "pnpm --filter @talkmateai/server dev",
+		"build": "pnpm -r build",
+		"prepare": "husky",
+		"format": "pnpm run format:client && pnpm run format:server",
+		"format:client": "pnpm --filter @talkmateai/client format",
+		"format:server": "pnpm --filter @talkmateai/server format",
+		"format:check": "pnpm run format:check:client && pnpm run format:check:server",
+		"format:check:client": "pnpm --filter @talkmateai/client format:check",
+		"format:check:server": "pnpm --filter @talkmateai/server format:check"
+	},
+	"author": "Govind Rajawat (github.com/govindrajawat)",
+	"homepage": "https://github.com/govindrajawat",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/govindrajawat/talkmateai.git"
+	},
+	"devDependencies": {
+		"concurrently": "^9.2.0",
+		"husky": "^9.1.7"
+	}
+}
