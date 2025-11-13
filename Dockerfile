@@ -38,7 +38,7 @@ COPY apps/server/package.json ./apps/server/
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy source code and build the client app
-COPY . .
+COPY apps/client ./apps/client
 RUN pnpm --filter @talkmateai/client build
 
 FROM ubuntu:22.04 AS backend-runtime

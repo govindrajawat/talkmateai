@@ -62,6 +62,10 @@ const CameraStream: React.FC<CameraStreamProps> = ({
   // Get available camera devices
   const getDevices = useCallback(async () => {
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+        setError('Media devices are not supported in this browser or context.');
+        return;
+      }
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(
         (device) => device.kind === 'videoinput'

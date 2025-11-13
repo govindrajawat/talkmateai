@@ -10,11 +10,7 @@ const TalkingHead = dynamic(() => import('@/components/TalkingHead'), {
 const VoiceVisualizer = dynamic(() => import('@/components/VoiceVisualizer'), {
   ssr: false
 });
-const CameraToggleButton = dynamic(
-  () =>
-    import('@/components/CameraStream').then((mod) => mod.CameraToggleButton),
-  { ssr: false }
-);
+const CameraToggleButton = dynamic(() => import('@/components/CameraStream').then(mod => mod.CameraToggleButton), { ssr: false });
 
 export default function Home() {
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);

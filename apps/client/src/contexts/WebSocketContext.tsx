@@ -109,8 +109,17 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
   const sendAudioSegment = useCallback(
     (audioData: ArrayBuffer, imageData?: string) => {
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+      
+      // Browser-compatible way to convert ArrayBuffer to Base64
+      let audioBase64 = '';
+      const bytes = new Uint8Array(audioData);
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i++) {
+        audioBase64 += String.fromCharCode(bytes[i]);
+      }
+      audioBase64 = window.btoa(audioBase64);
 
-      const audioBase64 = Buffer.from(audioData).toString('base64');
+      // const audioBase64 = Buffer.from(audioData).toString('base64');
       const message: { audio_segment: string; image?: string } = {
         audio_segment: audioBase64
       };

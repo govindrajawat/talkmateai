@@ -236,9 +236,6 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
       });
 
       try {
-        // Capture a frame if the camera is streaming
-        const imageBase64 = await captureFrame();
-
         await initAudioContext();
 
         // Convert base64 to audio buffer
@@ -272,7 +269,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
           timingData: timingData,
           duration: audioBuffer.duration,
           method: method,
-          image: imageBase64,
+          image: null, // This is received audio, no image is associated with it here
         });
 
         console.log(
@@ -301,7 +298,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
         );
       } 
     },
-    [captureFrame, initAudioContext, base64ToArrayBuffer, int16ArrayToFloat32, playNextAudio]
+    [initAudioContext, base64ToArrayBuffer, int16ArrayToFloat32, playNextAudio]
   );
 
   // Handle interrupt from server
@@ -512,6 +509,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
         <div className="flex gap-3">
           <Button
             onClick={isConnected ? disconnect : connect}
+            onMouseDown={initAudioContext} // Resume AudioContext on first click
             disabled={isConnecting || !scriptsLoaded}
             className="flex-1"
             variant={isConnected ? 'destructive' : 'default'}
