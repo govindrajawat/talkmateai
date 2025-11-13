@@ -5,9 +5,9 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.10 \
-    python3.10-venv \
-    python3.10-dev \
+    python3 \
+    python3-venv \
+    python3-dev \
     python3-pip \
     build-essential \
     git \
@@ -25,7 +25,7 @@ WORKDIR /app
 COPY apps/server/pyproject.toml apps/server/uv.lock apps/server/README.md ./server/
 
 RUN cd server && \
-    uv sync --python python3.10
+    uv sync --python python3
 
 FROM node:20-alpine AS frontend-builder
 
@@ -49,7 +49,7 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONPATH="/app/server:$PYTHONPATH"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.10 \
+    python3 \
     libsndfile1 \
     ffmpeg \
     curl \
@@ -99,7 +99,7 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONPATH="/app/server:$PYTHONPATH"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.10 \
+    python3 \
     python3-pip \
     nodejs \
     npm \
