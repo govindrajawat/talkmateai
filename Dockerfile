@@ -19,7 +19,7 @@ RUN pip3 install --no-cache-dir --upgrade pip uv
 
 WORKDIR /app
 
-COPY apps/server/pyproject.toml apps/server/uv.lock ./server/
+COPY apps/server/pyproject.toml apps/server/uv.lock apps/server/README.md ./server/
 
 RUN cd server && \
     uv sync --python python3
