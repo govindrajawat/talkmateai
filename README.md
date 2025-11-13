@@ -63,91 +63,66 @@
 
 ## 🚀 Quick Start
 
-### 1. Prerequisites
+### Option 1: Docker (Recommended)
+
+The easiest way to run the application. Works on Linux, Windows, and macOS.
+
+**Prerequisites:**
+- Docker and Docker Compose installed
+
+**Steps:**
+
+1. Build and start services:
+```bash
+docker-compose up -d --build
+```
+
+2. Access the application:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- Health Check: http://localhost:8000/health
+
+3. View logs:
+```bash
+docker-compose logs -f
+```
+
+4. Stop services:
+```bash
+docker-compose down
+```
+
+**Note:** The Docker setup is configured for CPU-only deployment. No GPU or NVIDIA Container Toolkit is required. The application automatically detects CPU-only mode and configures itself accordingly.
+
+### Option 2: Local Development
+
+For development without Docker, you'll need the following prerequisites:
+
 - Node.js 20+
 - PNPM
 - Python 3.10
 - UV (Python package manager)
 
-
-### 2. **Setup monorepo dependencies from root**
+**Setup monorepo dependencies from root:**
 ```bash
-# will setup both frontend and backend but require the prerequisites
 pnpm run monorepo-setup
 ```
 
-# TalkMateAI
+Then run the frontend and backend separately:
 
-A simple local demo that connects a Next.js frontend to a FastAPI backend for realtime, voice-controlled 3D avatar interactions. This repository contains a monorepo with the frontend app in `apps/client` and the backend server in `apps/server`.
-
-Owner: Govind Rajawat — https://github.com/govindrajawat
-
-Quick, minimal instructions are below so you can run the app locally with Docker. For development you can still run the frontend and backend separately using `pnpm` and `uv`.
-
-## Quick Start (Docker)
-
-These steps run both frontend and backend in Docker containers. This is the simplest way to get the app running locally on Linux, Windows, or macOS.
-
-1) Build images:
-
+**Frontend:**
 ```bash
-docker-compose build
+cd apps/client
+pnpm install
+pnpm dev
 ```
 
-2) Start services:
-
+**Backend:**
 ```bash
-docker-compose up -d
+cd apps/server
+uv sync
+uv run uvicorn main:app --reload
 ```
-
-3) Open the app:
-
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- Health Check: http://localhost:8000/health
-
-Stop services:
-
-```bash
-docker-compose down
-```
-
-**Note:** The Docker setup is configured for CPU-only deployment. No GPU or NVIDIA Container Toolkit is required.
-
-## Linux Server Deployment
-
-The Docker configuration is optimized for Linux CPU-based servers:
-
-- **Base Images:** Uses standard Ubuntu 24.04 (no CUDA dependencies)
-- **CPU Optimization:** PyTorch CPU-only builds, SDPA attention for CPU efficiency
-- **No GPU Required:** Fully functional on CPU-only servers
-- **Resource Efficient:** Optimized for minimal resource usage
-
-To deploy on a Linux server:
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd TalkMateAI-master
-
-# Build and start services
-docker-compose up -d --build
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-```
-
-The application will automatically detect CPU-only mode and configure itself accordingly.
-
-## Prerequisites (only if you run locally without Docker)
-
-- Node.js 20+
-- pnpm
-- Python 3.10
-- uv (Python runner)
 
 ## Notes & Requirements
 
@@ -158,25 +133,6 @@ The application will automatically detect CPU-only mode and configure itself acc
 - **Performance:** CPU-only mode will be slower than GPU-accelerated mode, but fully functional. For best performance, consider using a GPU-enabled server.
 
 Estimated initial download size: ~12–16 GB (Docker base images, Python packages, and model files). Allow ~30–60 minutes on a typical broadband connection for the first build.
-
-## Development (optional)
-
-Frontend (dev):
-
-```bash
-cd apps/client
-pnpm install
-pnpm dev
-```
-
-Backend (dev):
-
-```bash
-cd apps/server
-# Ensure uv/uvicorn is installed and configured
-pnpm --filter @talkmateai/server exec uv sync  # (or follow server README)
-uv run uvicorn main:app --reload
-```
 
 ## Project layout
 

@@ -285,13 +285,14 @@ class SmolVLMProcessor:
                     ]
 
                 # Apply chat template
+                input_dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
                 inputs = self.processor.apply_chat_template(
                     messages,
                     add_generation_prompt=True,
                     tokenize=True,
                     return_dict=True,
                     return_tensors="pt",
-                ).to(self.device, dtype=torch.bfloat16)
+                ).to(self.device, dtype=input_dtype)
 
                 # Create a streamer for token-by-token generation
                 streamer = TextIteratorStreamer(
@@ -741,6 +742,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Docker and monitoring"""
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
 
 @app.get("/stats")

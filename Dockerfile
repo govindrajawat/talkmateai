@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.10 \
     python3.10-venv \
     python3.10-dev \
+    python3-pip \
     build-essential \
     git \
     libsndfile1 \
@@ -16,12 +17,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip && \
-    pip install uv
+RUN pip3 install --upgrade pip && \
+    pip3 install uv
 
 WORKDIR /app
 
-COPY apps/server/pyproject.toml apps/server/README.md ./server/
+COPY apps/server/pyproject.toml apps/server/uv.lock apps/server/README.md ./server/
 
 RUN cd server && \
     uv sync --python python3.10
@@ -71,6 +72,8 @@ FROM node:20-alpine AS frontend-runtime
 
 ENV NODE_ENV=production
 
+RUN apk add --no-cache wget
+
 WORKDIR /app
 
 COPY --from=frontend-builder /app/apps/client/.next ./apps/client/.next
@@ -97,6 +100,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.10 \
+    python3-pip \
     nodejs \
     npm \
     libsndfile1 \
@@ -104,7 +108,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g pnpm
+RUN pip3 install uv && \
+    npm install -g pnpm
 
 WORKDIR /app
 
@@ -124,4 +129,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 EXPOSE 3000 8000
 
-CMD ["sh", "-c", "cd /app/server && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 & cd /app/apps/client && npm start"]
+CMD ["sh", "-c", "cd /app/server && uv run uvicorn main:app --host 0.0.0.0 --port 8000 & cd /app/apps/client && npm start"]
