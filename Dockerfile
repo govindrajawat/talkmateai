@@ -91,6 +91,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 EXPOSE 3000
 
 CMD ["sh", "-c", "cd /app/apps/client && npm start"]
+CMD ["pnpm", "--filter", "@talkmateai/client", "start"]
 
 FROM ubuntu:22.04 AS production
 
@@ -132,3 +133,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 EXPOSE 3000 8000
 
 CMD ["sh", "-c", "cd /app/server && uv run uvicorn main:app --host 0.0.0.0 --port 8000 & cd /app/apps/client && npm start"]
+CMD ["sh", "-c", "pnpm --filter @talkmateai/server dev & pnpm --filter @talkmateai/client start"]
