@@ -33,7 +33,7 @@ interface TalkingHeadProps {
 
 interface AudioQueueItem {
   buffer: AudioBuffer;
-  timingData?: unknown;
+  timingData?: TimingData;
   duration: number;
   method: string;
   image: string | null;
@@ -160,7 +160,12 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
     }
 
     try {
-      if (headRef.current && isTimingData(audioItem.timingData)) {
+      if (
+        headRef.current &&
+        audioItem.timingData &&
+        'word_timings' in audioItem.timingData &&
+        Array.isArray(audioItem.timingData.word_timings)
+      ) {
         // Use TalkingHead with native timing
         const speakData = {
           audio: audioItem.buffer,
