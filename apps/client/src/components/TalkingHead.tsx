@@ -389,7 +389,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
 
         const TalkingHead = (window as any).TalkingHead;
         if (!TalkingHead) {
-          throw new Error('TalkingHead library not loaded');
+          return; // Exit if the library isn't loaded yet, will re-run when scriptsLoaded changes
         }
 
         headRef.current = new TalkingHead(avatarRef.current, {
