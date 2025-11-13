@@ -1,9 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import VoiceVisualizer from '@/components/VoiceVisualizer';
-import TalkingHead from '@/components/TalkingHead';
-import { CameraToggleButton } from '@/components/CameraStream';
+import dynamic from 'next/dynamic';
+
+// Dynamically import components that use client-side APIs
+const TalkingHead = dynamic(() => import('@/components/TalkingHead'), {
+  ssr: false
+});
+const VoiceVisualizer = dynamic(() => import('@/components/VoiceVisualizer'), {
+  ssr: false
+});
+const CameraToggleButton = dynamic(
+  () =>
+    import('@/components/CameraStream').then((mod) => mod.CameraToggleButton),
+  { ssr: false }
+);
 
 export default function Home() {
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
