@@ -68,7 +68,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "cd /app/server && python -m uvicorn main:app --host 0.0.0.0 --port 8000"]
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 FROM node:20-alpine AS frontend-runtime
 
@@ -78,11 +78,9 @@ RUN apk add --no-cache wget && npm install -g pnpm
 
 WORKDIR /app
 
-COPY --from=frontend-builder /app/node_modules ./node_modules
 COPY --from=frontend-builder /app/apps/client/.next ./apps/client/.next
 COPY --from=frontend-builder /app/apps/client/public ./apps/client/public
 COPY --from=frontend-builder /app/apps/client/package.json ./apps/client/package.json
-COPY --from=frontend-builder /app/apps/client ./apps/client
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
@@ -111,8 +109,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install uv && \
-    npm install -g pnpm
+RUN npm install -g pnpm && \
+    pip3 install --no-cache-dir uv
 
 WORKDIR /app
 
@@ -123,7 +121,8 @@ COPY apps/server ./server
 COPY --from=frontend-builder /app/apps/client/.next ./apps/client/.next
 COPY --from=frontend-builder /app/apps/client/public ./apps/client/public
 COPY --from=frontend-builder /app/apps/client/package.json ./apps/client/package.json
-COPY --from=frontend-builder /app/apps/client/node_modules ./apps/client/node_modules
+COPY --from=frontend-builder /app/node_modules ./node_modules
+COPY --from=frontend-builder /app/apps/client ./apps/client
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 

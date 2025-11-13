@@ -33,7 +33,8 @@ interface TalkingHeadProps {
 }
 
 const TalkingHead: React.FC<TalkingHeadProps> = ({
-  className = ''
+  className = '',
+  cameraStream
 }) => {
   const avatarRef = useRef<HTMLDivElement>(null);
   const headRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
