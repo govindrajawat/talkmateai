@@ -138,9 +138,12 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
 
     try {
       if (
-        headRef.current &&
-        audioItem.timingData &&
-        audioItem.timingData.words
+        headRef.current && 
+        audioItem.timingData && 
+        typeof audioItem.timingData === 'object' &&
+        'words' in audioItem.timingData &&
+        'word_times' in audioItem.timingData &&
+        'word_durations' in audioItem.timingData
       ) {
         // Use TalkingHead with native timing
         const speakData = {
@@ -253,7 +256,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
         }
 
         const timingInfo = timingData
-          ? ` with ${timingData.words?.length || 0} word timings`
+          ? ` with ${ (timingData as any)?.words?.length || 0} word timings`
           : ' (no timing)';
         console.log(
           `✅ Audio queued successfully: ${audioBuffer.duration.toFixed(2)}s${timingInfo} [${method}]`

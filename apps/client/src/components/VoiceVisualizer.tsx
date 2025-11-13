@@ -288,7 +288,7 @@ const TransmissionHistory: React.FC<{
   );
 };
 
-const VoiceActivityDetector: React.FC<VoiceActivityDetectorProps> = ({
+const VoiceVisualizer: React.FC<VoiceActivityDetectorProps> = ({
   cameraStream
 }) => {
   const [isListening, setIsListening] = useState(false);
@@ -854,4 +854,4 @@ const VoiceActivityDetector: React.FC<VoiceActivityDetectorProps> = ({
   );
 };
 
-export default VoiceActivityDetector;
+export default VoiceVisualizer;
