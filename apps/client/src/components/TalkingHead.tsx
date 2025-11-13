@@ -149,24 +149,24 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
     isPlayingAudioRef.current = true;
     setIsSpeaking(true);
 
-    const audioItem = audioQueueRef.current.shift();
+    const audioItem = audioQueueRef.current.shift(); // This can be undefined
     console.log('Playing audio item:', audioItem);
 
+    if (!audioItem) {
+      // Should not happen due to the check above, but good for type safety
+      isPlayingAudioRef.current = false;
+      setIsSpeaking(false);
+      return;
+    }
+
     try {
-      if (
-        headRef.current && 
-        audioItem.timingData && 
-        typeof audioItem.timingData === 'object' &&
-        'words' in audioItem.timingData &&
-        'word_times' in audioItem.timingData &&
-        'word_durations' in audioItem.timingData
-      ) {
+      if (headRef.current && isTimingData(audioItem.timingData)) {
         // Use TalkingHead with native timing
         const speakData = {
           audio: audioItem.buffer,
-          words: audioItem.timingData.words,
-          wtimes: audioItem.timingData.word_times,
-          wdurations: audioItem.timingData.word_durations
+          words: audioItem.timingData.word_timings.map(t => t.word),
+          wtimes: audioItem.timingData.word_timings.map(t => t.start_time / 1000),
+          wdurations: audioItem.timingData.word_timings.map(t => (t.end_time - t.start_time) / 1000)
         };
 
         console.log('Using TalkingHead with timing data:', speakData);
