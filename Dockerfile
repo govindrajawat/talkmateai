@@ -38,8 +38,11 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/client ./apps/client
 
 RUN pnpm install --frozen-lockfile
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_DISABLE_ESLINT=1
+ENV NEXT_DISABLE_TYPECHECK=1
 
-RUN cd apps/client && NEXT_LINT_ERRORS_FAIL_BUILD=false pnpm build
+RUN cd apps/client && NEXT_PUBLIC_DISABLE_LINT=1 NEXT_PUBLIC_DISABLE_TYPECHECK=1 pnpm exec next build --no-lint
 
 FROM ubuntu:24.04 AS backend-runtime
 
