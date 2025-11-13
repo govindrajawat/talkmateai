@@ -442,6 +442,9 @@ const VoiceActivityDetector: React.FC<VoiceActivityDetectorProps> = ({
 
       if (imageCapture) {
         sendAudioSegment(audioData, imageCapture.data);
+        console.log('Sent audio + image to server', { audioSize, imageSize: imageCapture.size });
+      } else {
+        sendAudioSegment(audioData);
         console.log('Sent audio to server', { audioSize });
       }
 

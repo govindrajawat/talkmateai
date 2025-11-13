@@ -1,15 +1,13 @@
 FROM ubuntu:22.04 AS backend-builder
 
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1
+    PYTHONDONTWRITEBYTECODE=1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-venv \
     python3-dev \
     python3-pip \
-    build-essential \
     git \
     libsndfile1 \
     libsndfile1-dev \
@@ -17,11 +15,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --ignore-installed --upgrade pip uv
+RUN pip3 install --no-cache-dir --upgrade pip uv
 
 WORKDIR /app
 
-COPY apps/server/pyproject.toml apps/server/uv.lock apps/server/README.md ./server/
+COPY apps/server/pyproject.toml apps/server/uv.lock ./server/
 
 RUN cd server && \
     uv sync --python python3
@@ -32,16 +30,14 @@ RUN npm install -g pnpm
 
 WORKDIR /app
 
+# Copy only necessary files for dependency installation
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
+RUN pnpm install --frozen-lockfile --prod
+
+# Copy source code and build the client app
 COPY apps/client ./apps/client
-
-RUN pnpm install --frozen-lockfile
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NEXT_DISABLE_ESLINT=1
-ENV NEXT_DISABLE_TYPECHECK=1
-
-RUN cd apps/client && NEXT_PUBLIC_DISABLE_LINT=1 NEXT_PUBLIC_DISABLE_TYPECHECK=1 pnpm exec next build --no-lint
+RUN pnpm --filter @talkmateai/client build
 
 FROM ubuntu:22.04 AS backend-runtime
 
@@ -68,7 +64,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 EXPOSE 8000
 
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 FROM node:20-alpine AS frontend-runtime
 
@@ -78,13 +74,12 @@ RUN apk add --no-cache wget && npm install -g pnpm
 
 WORKDIR /app
 
+COPY --from=frontend-builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
+COPY --from=frontend-builder /app/node_modules ./node_modules
+COPY --from=frontend-builder /app/apps/client ./apps/client
+
 COPY --from=frontend-builder /app/apps/client/.next ./apps/client/.next
 COPY --from=frontend-builder /app/apps/client/public ./apps/client/public
-COPY --from=frontend-builder /app/apps/client/package.json ./apps/client/package.json
-COPY --from=frontend-builder /app/node_modules ./node_modules
-COPY --from=frontend-builder /app/apps/client/node_modules ./apps/client/node_modules
-
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
@@ -100,37 +95,25 @@ ENV PYTHONUNBUFFERED=1 \
     NODE_ENV=production \
     PATH="/app/server/.venv/bin:/usr/local/bin:$PATH" \
     PYTHONPATH="/app/server:$PYTHONPATH"
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    python3-pip \
-    nodejs \
-    npm \
-    libsndfile1 \
-    ffmpeg \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN npm install -g pnpm && \
-    pip3 install --no-cache-dir uv
+    
+RUN apt-get update && apt-get install -y --no-install-recommends curl libsndfile1 ffmpeg nodejs npm && \
+    npm install -g pnpm && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
+# Copy backend from its runtime stage
 COPY --from=backend-builder /app/server/.venv ./server/.venv
-
 COPY apps/server ./server
 
-COPY --from=frontend-builder /app/apps/client/.next ./apps/client/.next
-COPY --from=frontend-builder /app/apps/client/public ./apps/client/public
-COPY --from=frontend-builder /app/apps/client/package.json ./apps/client/package.json
+# Copy frontend from its builder stage
+COPY --from=frontend-builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
 COPY --from=frontend-builder /app/node_modules ./node_modules
 COPY --from=frontend-builder /app/apps/client ./apps/client
-
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 EXPOSE 3000 8000
 
-CMD ["sh", "-c", "pnpm --filter @talkmateai/server dev & pnpm --filter @talkmateai/client start"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port 8000 & pnpm --filter @talkmateai/client start"]
