@@ -78,10 +78,10 @@ RUN apk add --no-cache wget
 
 WORKDIR /app
 
+COPY --from=frontend-builder /app/node_modules ./node_modules
 COPY --from=frontend-builder /app/apps/client/.next ./apps/client/.next
 COPY --from=frontend-builder /app/apps/client/public ./apps/client/public
 COPY --from=frontend-builder /app/apps/client/package.json ./apps/client/package.json
-COPY --from=frontend-builder /app/apps/client/node_modules ./apps/client/node_modules
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
