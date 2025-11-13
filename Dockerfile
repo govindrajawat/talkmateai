@@ -33,7 +33,7 @@ WORKDIR /app
 # Copy only necessary files for dependency installation
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # Copy source code and build the client app
 COPY apps/client ./apps/client
