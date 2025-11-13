@@ -215,7 +215,7 @@ class SmolVLMProcessor:
         self.processor = AutoProcessor.from_pretrained(model_path)
         
         # Use flash_attention_2 only on CUDA, otherwise use default attention for CPU
-        attn_implementation = "flash_attention_2" if torch.cuda.is_available() else "sdpa"
+        attn_implementation = "flash_attention_2" if torch.cuda.is_available() else "eager"
         logger.info(f"Using attention implementation: {attn_implementation}")
         
         self.model = AutoModelForImageTextToText.from_pretrained(

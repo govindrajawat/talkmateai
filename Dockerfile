@@ -74,7 +74,7 @@ FROM node:20-alpine AS frontend-runtime
 
 ENV NODE_ENV=production
 
-RUN apk add --no-cache wget
+RUN apk add --no-cache wget && npm install -g pnpm
 
 WORKDIR /app
 
@@ -90,7 +90,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 EXPOSE 3000
 
-CMD ["pnpm", "--filter", "@talkmateai/client", "start"]
+CMD ["sh", "-c", "pnpm --filter @talkmateai/client start"]
 
 FROM ubuntu:22.04 AS production
 
