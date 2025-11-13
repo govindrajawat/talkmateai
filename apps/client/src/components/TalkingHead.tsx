@@ -297,6 +297,27 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
     handleInterrupt
   ]);
 
+  const loadAvatar = useCallback(
+    async (gender: string = 'F') => {
+      const avatarUrls = {
+        F: 'https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb?morphTargets=ARKit,Oculus+Visemes,mouthOpen,mouthSmile,eyesClosed,eyesLookUp,eyesLookDown&textureSizeLimit=1024&textureFormat=png',
+        M: 'https://models.readyplayer.me/638df5d0d72bffc6fa179441.glb'
+      };
+
+      try {
+        await headRef.current?.showAvatar({
+          url: avatarUrls[gender as keyof typeof avatarUrls],
+          body: gender,
+          avatarMood: selectedMood,
+          lipsyncLang: 'en'
+        });
+      } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+        showStatus(`Failed to load avatar: ${error.message}`, 'error');
+      }
+    },
+    [selectedMood]
+  );
+
   // Listen for TalkingHead library to load
   useEffect(() => {
     const handleTalkingHeadLoaded = () => {
@@ -370,24 +391,6 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
       }
     };
   }, [scriptsLoaded, connect, selectedMood, selectedAvatar, loadAvatar]);
-
-  const loadAvatar = async (gender: string = 'F') => {
-    const avatarUrls = {
-      F: 'https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb?morphTargets=ARKit,Oculus+Visemes,mouthOpen,mouthSmile,eyesClosed,eyesLookUp,eyesLookDown&textureSizeLimit=1024&textureFormat=png',
-      M: 'https://models.readyplayer.me/638df5d0d72bffc6fa179441.glb'
-    };
-
-    try {
-      await headRef.current?.showAvatar({
-        url: avatarUrls[gender as keyof typeof avatarUrls],
-        body: gender,
-        avatarMood: selectedMood,
-        lipsyncLang: 'en'
-      });
-    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-      showStatus(`Failed to load avatar: ${error.message}`, 'error');
-    }
-  };
 
   const handleAvatarChange = (gender: string) => {
     setSelectedAvatar(gender);
