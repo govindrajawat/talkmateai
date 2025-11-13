@@ -349,7 +349,11 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
           lipsyncLang: 'en'
         });
       } catch (error: unknown) {
-        showStatus(`Failed to load avatar: ${error.message}`, 'error');
+        if (error instanceof Error) {
+          showStatus(`Failed to load avatar: ${error.message}`, 'error');
+        } else {
+          showStatus('Failed to load avatar: An unknown error occurred', 'error');
+        }
       }
     },
     [selectedMood]
@@ -412,7 +416,11 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
         connect();
       } catch (error: unknown) {
         setIsLoading(false);
-        showStatus(`Failed to initialize: ${error.message}`, 'error');
+        if (error instanceof Error) {
+          showStatus(`Failed to initialize: ${error.message}`, 'error');
+        } else {
+          showStatus('Failed to initialize: An unknown error occurred', 'error');
+        }
       }
     };
 
