@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import VoiceActivityDetector from '@/components/VoiceActivityDetector';
+import VoiceVisualizer from '@/components/VoiceVisualizer';
 import TalkingHead from '@/components/TalkingHead';
 import { CameraToggleButton } from '@/components/CameraStream';
 
@@ -40,7 +40,7 @@ export default function Home() {
 
           {/* Voice Activity Detector */}
           <div className="order-2">
-            <VoiceActivityDetector cameraStream={cameraStream} />
+            <VoiceVisualizer cameraStream={cameraStream} />
           </div>
         </div>
       </div>

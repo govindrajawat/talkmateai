@@ -29,6 +29,7 @@ import { useWebSocketContext } from '@/contexts/WebSocketContext';
 
 interface TalkingHeadProps {
   className?: string;
+  cameraStream: MediaStream | null;
 }
 
 const TalkingHead: React.FC<TalkingHeadProps> = ({
@@ -93,6 +94,37 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
       await audioContextRef.current.resume();
     }
   }, []);
+
+  // Function to capture a frame from the camera stream
+  const captureFrame = useCallback(async (): Promise<string | null> => {
+    if (!cameraStream) return null;
+
+    const videoTrack = cameraStream.getVideoTracks()[0];
+    if (!videoTrack) return null;
+
+    try {
+      const imageCapture = new ImageCapture(videoTrack);
+      const blob = await imageCapture.grabFrame();
+
+      // Convert blob to base64
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === 'string') {
+            // Remove the data URL prefix
+            resolve(reader.result.split(',')[1]);
+          } else {
+            reject(new Error('Failed to read blob as base64 string.'));
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Error capturing frame:', error);
+      return null;
+    }
+  }, [cameraStream]);
 
   // Convert base64 to ArrayBuffer
   const base64ToArrayBuffer = useCallback((base64: string) => {
@@ -185,7 +217,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
       timingData?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
       sampleRate = 24000,
       method = 'unknown'
-    ) => {
+    ) => {      
       console.log('🎵 TALKINGHEAD handleAudioReceived CALLED!', {
         audioLength: base64Audio.length,
         timingData,
@@ -194,6 +226,9 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
       });
 
       try {
+        // Capture a frame if the camera is streaming
+        const imageBase64 = await captureFrame();
+
         await initAudioContext();
 
         // Convert base64 to audio buffer
@@ -226,7 +261,8 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
           buffer: audioBuffer,
           timingData: timingData,
           duration: audioBuffer.duration,
-          method: method
+          method: method,
+          image: imageBase64,
         });
 
         console.log(
@@ -253,7 +289,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
           '❌ Error processing audio in handleAudioReceived:',
           error
         );
-      }
+      } 
     },
     [initAudioContext, base64ToArrayBuffer, int16ArrayToFloat32, playNextAudio]
   );
