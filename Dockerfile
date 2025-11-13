@@ -30,13 +30,15 @@ RUN npm install -g pnpm
 
 WORKDIR /app
 
-# Copy only necessary files for dependency installation
+# Copy all package manifests first to leverage Docker cache
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/client/package.json ./apps/client/
+COPY apps/server/package.json ./apps/server/
 
-RUN pnpm install --frozen-lockfile --prod --ignore-scripts
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy source code and build the client app
-COPY apps/client ./apps/client
+COPY . .
 RUN pnpm --filter @talkmateai/client build
 
 FROM ubuntu:22.04 AS backend-runtime
