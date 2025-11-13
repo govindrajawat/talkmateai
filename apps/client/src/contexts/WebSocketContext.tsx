@@ -3,55 +3,34 @@
 import React, {
   createContext,
   useContext,
-  useRef,
-  useCallback,
   useState,
-  ReactNode
+  useCallback,
+  useRef,
+  useEffect
 } from 'react';
 
-interface WordTiming {
-  word: string;
-  start_time: number;
-  end_time: number;
-}
-
-interface WebSocketMessage {
-  status?: string;
-  client_id?: string;
-  interrupt?: boolean;
-  audio?: string;
-  word_timings?: WordTiming[];
-  sample_rate?: number;
-  method?: string;
-  audio_complete?: boolean;
-  error?: string;
-  type?: string;
-}
+type AudioReceivedCallback = (
+  base64Audio: string,
+  timingData?: any,
+  sampleRate?: number,
+  method?: string
+) => void;
 
 interface WebSocketContextType {
   isConnected: boolean;
   isConnecting: boolean;
-  connect: () => Promise<void>;
+  connect: () => void;
   disconnect: () => void;
-  sendAudioSegment: (audioData: ArrayBuffer) => void;
-  sendImage: (imageData: string) => void;
-  sendAudioWithImage: (audioData: ArrayBuffer, imageData: string) => void;
-  onAudioReceived: (
-    callback: (
-      audioData: string,
-      timingData?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-      sampleRate?: number,
-      method?: string
-    ) => void
-  ) => void;
+  sendAudioSegment: (audioData: ArrayBuffer, imageData?: string) => void;
+  onAudioReceived: (callback: AudioReceivedCallback) => void;
   onInterrupt: (callback: () => void) => void;
   onError: (callback: (error: string) => void) => void;
-  onStatusChange: (
-    callback: (status: 'connected' | 'disconnected' | 'connecting') => void
-  ) => void;
+  onStatusChange: (callback: (status: string) => void) => void;
 }
 
-const WebSocketContext = createContext<WebSocketContextType | null>(null);
+const WebSocketContext = createContext<WebSocketContextType | undefined>(
+  undefined
+);
 
 export const useWebSocketContext = () => {
   const context = useContext(WebSocketContext);
@@ -63,225 +42,101 @@ export const useWebSocketContext = () => {
   return context;
 };
 
-interface WebSocketProviderProps {
-  children: ReactNode;
-  serverUrl?: string;
-}
-
-export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
-  children,
-  serverUrl = 'ws://localhost:8000/ws/test-client'
+export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({
+  children
 }) => {
-  const wsRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const wsRef = useRef<WebSocket | null>(null);
 
-  // Callback refs
-  const audioReceivedCallbackRef = useRef<
-    | ((
-        audioData: string,
-        timingData?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        sampleRate?: number,
-        method?: string
-      ) => void)
-    | null
-  >(null);
+  // Callback refs to avoid stale closures
+  const audioReceivedCallbackRef = useRef<AudioReceivedCallback | null>(null);
   const interruptCallbackRef = useRef<(() => void) | null>(null);
   const errorCallbackRef = useRef<((error: string) => void) | null>(null);
-  const statusChangeCallbackRef = useRef<
-    ((status: 'connected' | 'disconnected' | 'connecting') => void) | null
-  >(null);
+  const statusCallbackRef = useRef<((status: string) => void) | null>(null);
 
-  const connect = useCallback(async () => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) return;
+  const connect = useCallback(() => {
+    if (wsRef.current || isConnecting) return;
 
-    try {
-      setIsConnecting(true);
-      statusChangeCallbackRef.current?.('connecting');
+    setIsConnecting(true);
+    statusCallbackRef.current?.('connecting');
 
-      wsRef.current = new WebSocket(serverUrl);
+    // Use a relative URL for the WebSocket, which will be proxied by Next.js
+    const wsUrl = `ws://${window.location.host}/ws/test-client`;
+    console.log(`Connecting to WebSocket at: ${wsUrl}`);
 
-      wsRef.current.onopen = () => {
-        setIsConnected(true);
-        setIsConnecting(false);
-        statusChangeCallbackRef.current?.('connected');
-        console.log('WebSocket connected');
-      };
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
 
-      wsRef.current.onmessage = (event) => {
-        try {
-          const data: WebSocketMessage = JSON.parse(event.data);
-          console.log('WebSocket message received:', data);
-
-          if (data.status === 'connected') {
-            console.log(
-              `Server confirmed connection. Client ID: ${data.client_id}`
-            );
-          } else if (data.interrupt) {
-            console.log('Received interrupt signal');
-            interruptCallbackRef.current?.();
-          } else if (data.audio) {
-            // Handle audio with native timing
-            let timingData = null;
-
-            if (data.word_timings) {
-              // Convert to TalkingHead format
-              timingData = {
-                words: data.word_timings.map((wt) => wt.word),
-                word_times: data.word_timings.map((wt) => wt.start_time),
-                word_durations: data.word_timings.map(
-                  (wt) => wt.end_time - wt.start_time
-                )
-              };
-              console.log('Converted timing data:', timingData);
-            }
-
-            console.log('Calling audioReceivedCallback with:', {
-              audioLength: data.audio.length,
-              timingData,
-              sampleRate: data.sample_rate || 24000,
-              method: data.method || 'unknown'
-            });
-
-            audioReceivedCallbackRef.current?.(
-              data.audio,
-              timingData,
-              data.sample_rate || 24000,
-              data.method || 'unknown'
-            );
-          } else if (data.audio_complete) {
-            console.log('Audio processing complete');
-          } else if (data.error) {
-            errorCallbackRef.current?.(data.error); // eslint-disable-line @typescript-eslint/no-unused-vars
-          } else if (data.type === 'ping') {
-            // Keepalive ping - no action needed, but good to know it's working
-          }
-        } catch (e) {
-          console.log('Non-JSON message:', event.data);
-        }
-      };
-
-      wsRef.current.onerror = (error) => {
-        console.error('WebSocket error:');
-        errorCallbackRef.current?.('WebSocket connection error');
-      };
-
-      wsRef.current.onclose = () => {
-        setIsConnected(false);
-        setIsConnecting(false);
-        statusChangeCallbackRef.current?.('disconnected');
-        console.log('WebSocket disconnected');
-      };
-    } catch (error) {
+    ws.onopen = () => {
+      console.log('WebSocket connected');
+      setIsConnected(true);
       setIsConnecting(false);
-      errorCallbackRef.current?.('Failed to connect to WebSocket server'); // eslint-disable-line @typescript-eslint/no-unused-vars
-    }
-  }, [serverUrl]);
+      statusCallbackRef.current?.('connected');
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.audio) {
+        audioReceivedCallbackRef.current?.(
+          data.audio,
+          data.word_timings,
+          data.sample_rate,
+          data.method
+        );
+      } else if (data.interrupt) {
+        interruptCallbackRef.current?.();
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      errorCallbackRef.current?.('Connection failed');
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket disconnected');
+      setIsConnected(false);
+      setIsConnecting(false);
+      wsRef.current = null;
+      statusCallbackRef.current?.('disconnected');
+    };
+  }, [isConnecting]);
 
   const disconnect = useCallback(() => {
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
+    wsRef.current?.close();
   }, []);
 
-  const sendAudioSegment = useCallback((audioData: ArrayBuffer) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      // Convert ArrayBuffer to base64
-      const bytes = new Uint8Array(audioData);
-      let binary = '';
-      for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
-      const base64Audio = btoa(binary);
+  const sendAudioSegment = useCallback(
+    (audioData: ArrayBuffer, imageData?: string) => {
+      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
-      const message = {
-        audio_segment: base64Audio
+      const audioBase64 = Buffer.from(audioData).toString('base64');
+      const message: { audio_segment: string; image?: string } = {
+        audio_segment: audioBase64
       };
 
-      wsRef.current.send(JSON.stringify(message));
-      console.log(`Sent audio segment: ${audioData.byteLength} bytes`);
-    }
-  }, []);
-
-  const sendImage = useCallback((imageData: string) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      const message = {
-        image: imageData
-      };
-
-      wsRef.current.send(JSON.stringify(message));
-      console.log('Sent image to server');
-    }
-  }, []);
-
-  const sendAudioWithImage = useCallback(
-    (audioData: ArrayBuffer, imageData: string) => {
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        // Convert ArrayBuffer to base64
-        const bytes = new Uint8Array(audioData);
-        let binary = '';
-        for (let i = 0; i < bytes.byteLength; i++) {
-          binary += String.fromCharCode(bytes[i]);
-        }
-        const base64Audio = btoa(binary);
-
-        const message = {
-          audio_segment: base64Audio,
-          image: imageData
-        };
-
-        wsRef.current.send(JSON.stringify(message));
-        console.log(`Sent audio + image: ${audioData.byteLength} bytes audio`);
+      if (imageData) {
+        message.image = imageData;
       }
+
+      wsRef.current.send(JSON.stringify(message));
     },
     []
   );
 
-  // Callback registration methods
-  const onAudioReceived = useCallback(
-    (
-      callback: (
-        audioData: string,
-        timingData?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        sampleRate?: number,
-        method?: string
-      ) => void
-    ) => {
-      audioReceivedCallbackRef.current = callback;
-    },
-    []
-  );
-
-  const onInterrupt = useCallback((callback: () => void) => {
-    interruptCallbackRef.current = callback;
-  }, []);
-
-  const onError = useCallback((callback: (error: string) => void) => {
-    errorCallbackRef.current = callback;
-  }, []);
-
-  const onStatusChange = useCallback(
-    (
-      callback: (status: 'connected' | 'disconnected' | 'connecting') => void
-    ) => {
-      statusChangeCallbackRef.current = callback;
-    },
-    []
-  );
-
-  const value: WebSocketContextType = {
+  const value = {
     isConnected,
     isConnecting,
     connect,
     disconnect,
     sendAudioSegment,
-    sendImage,
-    sendAudioWithImage,
-    onAudioReceived,
-    onInterrupt,
-    onError,
-    onStatusChange
+    onAudioReceived: (cb: AudioReceivedCallback) =>
+      (audioReceivedCallbackRef.current = cb),
+    onInterrupt: (cb: () => void) => (interruptCallbackRef.current = cb),
+    onError: (cb: (error: string) => void) => (errorCallbackRef.current = cb),
+    onStatusChange: (cb: (status: string) => void) =>
+      (statusCallbackRef.current = cb)
   };
 
   return (

@@ -603,6 +603,11 @@ const VoiceActivityDetector: React.FC<VoiceActivityDetectorProps> = ({
   // Start listening
   const startListening = useCallback(async () => {
     try {
+      // Resume AudioContext on user gesture
+      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           sampleRate: config.sampleRate,
