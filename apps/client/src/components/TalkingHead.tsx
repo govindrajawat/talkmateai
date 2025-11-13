@@ -35,9 +35,9 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
   className = ''
 }) => {
   const avatarRef = useRef<HTMLDivElement>(null);
-  const headRef = useRef<any>(null);
+  const headRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
   const audioContextRef = useRef<AudioContext | null>(null);
-  const audioQueueRef = useRef<any[]>([]);
+  const audioQueueRef = useRef<any[]>([]); // eslint-disable-line @typescript-eslint/no-explicit-any
   const isPlayingAudioRef = useRef(false);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -181,8 +181,8 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
   // Handle audio from WebSocket
   const handleAudioReceived = useCallback(
     async (
-      base64Audio: string, // eslint-disable-line @typescript-eslint/no-explicit-any
-      timingData?: any,
+      base64Audio: string,
+      timingData?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
       sampleRate = 24000,
       method = 'unknown'
     ) => {
@@ -352,7 +352,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
 
         // Auto-connect to WebSocket
         connect();
-      } catch (error: unknown) {
+      } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         setIsLoading(false);
         showStatus(`Failed to initialize: ${error.message}`, 'error');
       }
@@ -384,7 +384,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
         avatarMood: selectedMood,
         lipsyncLang: 'en'
       });
-    } catch (error: unknown) {
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       showStatus(`Failed to load avatar: ${error.message}`, 'error');
     }
   };

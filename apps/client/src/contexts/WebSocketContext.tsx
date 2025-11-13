@@ -38,7 +38,7 @@ interface WebSocketContextType {
   sendAudioWithImage: (audioData: ArrayBuffer, imageData: string) => void;
   onAudioReceived: (
     callback: (
-      audioData: string, // eslint-disable-line @typescript-eslint/no-explicit-any
+      audioData: string,
       timingData?: any,
       sampleRate?: number,
       method?: string
@@ -80,7 +80,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   const audioReceivedCallbackRef = useRef<
     | ((
         audioData: string,
-        timingData?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        timingData?: any,
         sampleRate?: number,
         method?: string
       ) => void)
@@ -156,12 +156,12 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
           } else if (data.type === 'ping') {
             // Keepalive ping - no action needed, but good to know it's working
           }
-        } catch (e) {
+        } catch (_e) {
           console.log('Non-JSON message:', event.data);
         }
       };
 
-      wsRef.current.onerror = () => {
+      wsRef.current.onerror = (_error) => {
         console.error('WebSocket error:');
         errorCallbackRef.current?.('WebSocket connection error');
       };
@@ -242,7 +242,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   const onAudioReceived = useCallback(
     (
       callback: (
-        audioData: string, // eslint-disable-line @typescript-eslint/no-explicit-any
+        audioData: string,
         timingData?: any,
         sampleRate?: number,
         method?: string

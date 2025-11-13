@@ -44,7 +44,7 @@ interface VoiceActivityDetectorProps {
 const VoiceBlob: React.FC<{
   energy: number;
   isActive: boolean;
-  transmissionMode: 'audio' | 'audio+image' | 'none';
+  transmissionMode: 'audio' | 'audio+image' | 'none'; // eslint-disable-line @typescript-eslint/no-unused-vars
 }> = ({ energy, threshold, transmissionMode }) => {
   const [animationTime, setAnimationTime] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
@@ -332,7 +332,7 @@ const VoiceActivityDetector: React.FC<VoiceActivityDetectorProps> = ({
     isConnected,
     connect,
     sendAudioSegment,
-    sendImage,
+    sendImage: _sendImage,
     sendAudioWithImage
   } = useWebSocketContext();
 
