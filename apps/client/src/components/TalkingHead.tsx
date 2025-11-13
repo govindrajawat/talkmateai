@@ -29,7 +29,6 @@ import { useWebSocketContext } from '@/contexts/WebSocketContext';
 
 interface TalkingHeadProps {
   className?: string;
-  cameraStream: MediaStream | null;
 }
 
 interface AudioQueueItem {
@@ -41,8 +40,7 @@ interface AudioQueueItem {
 }
 
 const TalkingHead: React.FC<TalkingHeadProps> = ({
-  className = '',
-  cameraStream
+  className = ''
 }) => {
   const avatarRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -323,7 +321,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
           avatarMood: selectedMood,
           lipsyncLang: 'en'
         });
-      } catch (error: unknown) {
+      } catch (error) {
         if (error instanceof Error) {
           showStatus(`Failed to load avatar: ${error.message}`, 'error');
         } else {
@@ -389,7 +387,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
 
         // Auto-connect to WebSocket
         connect();
-      } catch (error: unknown) {
+      } catch (error) {
         setIsLoading(false);
         if (error instanceof Error) {
           showStatus(`Failed to initialize: ${error.message}`, 'error');

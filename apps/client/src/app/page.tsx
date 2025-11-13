@@ -41,7 +41,7 @@ export default function Home() {
           {/* TalkingHead Component */}
           <div className="order-1">
             <div className="rounded-lg bg-white p-6 shadow-lg">
-              <TalkingHead cameraStream={cameraStream} />
+              <TalkingHead />
             </div>
           </div>
 
