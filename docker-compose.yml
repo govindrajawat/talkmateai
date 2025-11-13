@@ -1,7 +1,5 @@
 services:
   backend:
-    networks:
-      - synergy-devops_default
     build:
       context: .
       dockerfile: Dockerfile
@@ -19,8 +17,6 @@ services:
       retries: 10
 
   frontend:
-    networks:
-      - synergy-devops_default
     build:
       context: .
       dockerfile: Dockerfile
@@ -37,6 +33,3 @@ volumes:
   huggingface-cache:
     driver: local
 
-networks:
-  synergy-devops_default:
-    external: true
