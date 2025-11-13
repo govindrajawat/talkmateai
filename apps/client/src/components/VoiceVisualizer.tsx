@@ -607,6 +607,11 @@ const VoiceVisualizer: React.FC<VoiceActivityDetectorProps> = ({
         await audioContextRef.current.resume();
       }
 
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Microphone access is not supported in this browser or context. Please use a secure connection (HTTPS) or localhost.');
+        return;
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           sampleRate: config.sampleRate,

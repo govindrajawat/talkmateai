@@ -86,6 +86,11 @@ const CameraStream: React.FC<CameraStreamProps> = ({
     try {
       setError(null);
 
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError('getUserMedia is not supported in this browser or context. Please use HTTPS or localhost.');
+        return;
+      }
+
       const constraints: MediaStreamConstraints = {
         video: {
           deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
