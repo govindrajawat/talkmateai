@@ -331,9 +331,7 @@ const VoiceActivityDetector: React.FC<VoiceActivityDetectorProps> = ({
   const {
     isConnected,
     connect,
-    sendAudioSegment,
-    sendImage,
-    sendAudioWithImage
+    sendAudioSegment
   } = useWebSocketContext();
 
   // Auto-connect to WebSocket on mount

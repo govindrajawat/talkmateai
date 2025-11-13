@@ -215,7 +215,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
   const handleAudioReceived = useCallback(
     async (
       base64Audio: string,
-      timingData?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      timingData?: unknown,
       sampleRate = 24000,
       method = 'unknown'
     ) => {      
@@ -292,7 +292,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
         );
       } 
     },
-    [initAudioContext, base64ToArrayBuffer, int16ArrayToFloat32, playNextAudio]
+    [captureFrame, initAudioContext, base64ToArrayBuffer, int16ArrayToFloat32, playNextAudio]
   );
 
   // Handle interrupt from server
@@ -348,7 +348,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
           avatarMood: selectedMood,
           lipsyncLang: 'en'
         });
-      } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      } catch (error: unknown) {
         showStatus(`Failed to load avatar: ${error.message}`, 'error');
       }
     },
@@ -410,7 +410,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
 
         // Auto-connect to WebSocket
         connect();
-      } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      } catch (error: unknown) {
         setIsLoading(false);
         showStatus(`Failed to initialize: ${error.message}`, 'error');
       }

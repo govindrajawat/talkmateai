@@ -6,12 +6,11 @@ import React, {
   useState,
   useCallback,
   useRef,
-  useEffect
 } from 'react';
 
 type AudioReceivedCallback = (
   base64Audio: string,
-  timingData?: any,
+  timingData?: unknown,
   sampleRate?: number,
   method?: string
 ) => void;

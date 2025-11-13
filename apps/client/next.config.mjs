@@ -1,9 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable experimental WebSocket proxying
-  experimental: {
-    websocketProxy: true
-  },
   // Set up rewrites to proxy API and WebSocket requests
   async rewrites() {
     return [
