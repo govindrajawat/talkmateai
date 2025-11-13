@@ -39,12 +39,28 @@ interface AudioQueueItem {
   image: string | null;
 }
 
+interface WordTiming {
+  word: string;
+  start_time: number;
+  end_time: number;
+}
+
+interface TimingData {
+  word_timings: WordTiming[];
+}
+
+interface ITalkingHead {
+  speakAudio(data: { audio: AudioBuffer; words?: string[]; wtimes?: number[]; wdurations?: number[] }): void;
+  showAvatar(options: { url: string; body: string; avatarMood: string; lipsyncLang: string }): Promise<void>;
+  setMood(mood: string): void;
+  stop(): void;
+}
+
 const TalkingHead: React.FC<TalkingHeadProps> = ({
   className = ''
 }) => {
   const avatarRef = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const headRef = useRef<any>(null);
+  const headRef = useRef<ITalkingHead | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioQueueRef = useRef<AudioQueueItem[]>([]);
   const isPlayingAudioRef = useRef(false);
@@ -256,7 +272,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
         }
 
         const timingInfo = timingData
-          ? ` with ${ (timingData as any)?.words?.length || 0} word timings`
+          ? ` with ${ (timingData as { word_timings?: [] }).word_timings?.length || 0} word timings`
           : ' (no timing)';
         console.log(
           `✅ Audio queued successfully: ${audioBuffer.duration.toFixed(2)}s${timingInfo} [${method}]`
@@ -345,7 +361,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
       showStatus('Failed to load TalkingHead library', 'error');
     };
 
-    if ((window as any).TalkingHead) {
+    if ((window as { TalkingHead?: unknown }).TalkingHead) {
       setScriptsLoaded(true);
       return;
     }
@@ -368,7 +384,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
         setIsLoading(true);
         showStatus('Initializing avatar...', 'info');
 
-        const TalkingHead = (window as any).TalkingHead;
+        const TalkingHead = (window as { TalkingHead?: new (ref: HTMLDivElement, options: object) => ITalkingHead }).TalkingHead;
         if (!TalkingHead) {
           return; // Exit if the library isn't loaded yet, will re-run when scriptsLoaded changes
         }

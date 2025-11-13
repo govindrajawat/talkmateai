@@ -79,7 +79,7 @@ const CameraStream: React.FC<CameraStreamProps> = ({
       console.error('Error getting devices:', error);
       setError('Failed to get camera devices');
     }
-  }, [selectedDeviceId]); // Remove selectedDeviceId dependency
+  }, []); // Remove selectedDeviceId dependency
 
   // Start camera stream
   const startStream = useCallback(async () => {
@@ -109,8 +109,9 @@ const CameraStream: React.FC<CameraStreamProps> = ({
       console.error('Error starting camera:', error);
       if (error instanceof Error) {
         setError(`Failed to start camera: ${error.message}`);
+      } else {
+        setError(`Failed to start camera: Unknown error`);
       }
-      setError(`Failed to start camera: Unknown error`);
       setIsStreaming(false);
     }
   }, [selectedDeviceId]);
@@ -199,7 +200,7 @@ const CameraStream: React.FC<CameraStreamProps> = ({
   // Initialize devices on mount
   useEffect(() => {
     getDevices();
-  }, [getDevices]); // Remove getDevices dependency
+  }, []); // Remove getDevices dependency
 
   // Cleanup on unmount
   useEffect(() => {
