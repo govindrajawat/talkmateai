@@ -324,7 +324,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
           avatarMood: selectedMood,
           lipsyncLang: 'en'
         });
-      } catch (error) {
+      } catch (error: unknown) {
         if (error instanceof Error) {
           showStatus(`Failed to load avatar: ${error.message}`, 'error');
         } else {
@@ -390,7 +390,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
 
         // Auto-connect to WebSocket
         connect();
-      } catch (error) {
+      } catch (error: unknown) {
         setIsLoading(false);
         if (error instanceof Error) {
           showStatus(`Failed to initialize: ${error.message}`, 'error');
@@ -406,7 +406,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
       if (headRef.current) {
         try {
           headRef.current.stop();
-        } catch (error) {
+        } catch (error: unknown) {
           console.error('Cleanup error:', error);
         }
       }
