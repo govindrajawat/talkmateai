@@ -394,6 +394,10 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
           return; // Exit if the library isn't loaded yet, will re-run when scriptsLoaded changes
         }
 
+        if (!avatarRef.current) {
+          throw new Error("Avatar ref is not available");
+        }
+
         headRef.current = new TalkingHead(avatarRef.current, {
           ttsEndpoint: 'https://texttospeech.googleapis.com/v1/text:synthesize',
           jwtGet: () => Promise.resolve('dummy-jwt-token'),
