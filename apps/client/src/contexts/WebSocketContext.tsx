@@ -39,7 +39,7 @@ interface WebSocketContextType {
   onAudioReceived: (
     callback: (
       audioData: string,
-      timingData?: any,
+      timingData?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
       sampleRate?: number,
       method?: string
     ) => void
@@ -80,7 +80,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   const audioReceivedCallbackRef = useRef<
     | ((
         audioData: string,
-        timingData?: any,
+        timingData?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
         sampleRate?: number,
         method?: string
       ) => void)
@@ -152,16 +152,16 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
           } else if (data.audio_complete) {
             console.log('Audio processing complete');
           } else if (data.error) {
-            errorCallbackRef.current?.(data.error);
+            errorCallbackRef.current?.(data.error); // eslint-disable-line @typescript-eslint/no-unused-vars
           } else if (data.type === 'ping') {
             // Keepalive ping - no action needed, but good to know it's working
           }
-        } catch (_e) {
+        } catch (e) {
           console.log('Non-JSON message:', event.data);
         }
       };
 
-      wsRef.current.onerror = (_error) => {
+      wsRef.current.onerror = (error) => {
         console.error('WebSocket error:');
         errorCallbackRef.current?.('WebSocket connection error');
       };
@@ -174,7 +174,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       };
     } catch (error) {
       setIsConnecting(false);
-      errorCallbackRef.current?.('Failed to connect to WebSocket server');
+      errorCallbackRef.current?.('Failed to connect to WebSocket server'); // eslint-disable-line @typescript-eslint/no-unused-vars
     }
   }, [serverUrl]);
 
@@ -243,7 +243,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     (
       callback: (
         audioData: string,
-        timingData?: any,
+        timingData?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
         sampleRate?: number,
         method?: string
       ) => void

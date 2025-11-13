@@ -369,7 +369,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
         }
       }
     };
-  }, [scriptsLoaded, connect, selectedMood, selectedAvatar]);
+  }, [scriptsLoaded, connect, selectedMood, selectedAvatar, loadAvatar]);
 
   const loadAvatar = async (gender: string = 'F') => {
     const avatarUrls = {
