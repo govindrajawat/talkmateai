@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build:
@@ -20,7 +18,7 @@ services:
       target: frontend-runtime
     container_name: talkmateai-frontend
     ports:
-      - "3000:3000"
+      - "3002:3000"
     depends_on:
       - backend
     restart: unless-stopped
