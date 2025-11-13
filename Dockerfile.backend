@@ -1,13 +1,9 @@
-# Dockerfile.backend - Build only the FastAPI backend
-# Usage: docker build -f Dockerfile.backend -t talkmateai-backend:latest .
-
-FROM nvidia/cuda:12.4.0-devel-ubuntu24.04 AS builder
+FROM ubuntu:24.04 AS builder
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.10 \
     python3.10-venv \
@@ -20,30 +16,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install UV (Python package manager)
 RUN pip install --upgrade pip && \
     pip install uv
 
 WORKDIR /app
 
-# Copy pyproject.toml and related files
 COPY apps/server/pyproject.toml apps/server/README.md ./server/
 
-# Create virtual environment and install Python dependencies
 RUN cd server && \
     uv sync --python python3.10
 
-# ============================================================================
-# Runtime Stage
-# ============================================================================
-FROM nvidia/cuda:12.4.0-runtime-ubuntu24.04
+FROM ubuntu:24.04
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH="/app/server/.venv/bin:$PATH" \
     PYTHONPATH="/app/server:$PYTHONPATH"
 
-# Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.10 \
     libsndfile1 \
@@ -53,21 +42,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Copy virtual environment from builder
 COPY --from=builder /app/server/.venv ./server/.venv
 
-# Copy server application code
 COPY apps/server ./server
 
-# Create cache directory for models
 RUN mkdir -p /root/.cache/huggingface
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Expose port
 EXPOSE 8000
 
-# Run FastAPI backend
 CMD ["sh", "-c", "cd /app/server && uv run uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1"]

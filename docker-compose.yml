@@ -12,13 +12,6 @@ services:
     volumes:
       - huggingface-cache:/root/.cache/huggingface
     restart: unless-stopped
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
 
   frontend:
     build:

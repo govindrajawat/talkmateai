@@ -36,7 +36,7 @@
   - `HuggingFaceTB/SmolVLM2-256M-Video-Instruct` - Vision-language understanding
   - `Kokoro TTS` - High-quality voice synthesis
 - **⚡ Framework:** FastAPI with WebSocket support
-- **🔧 Processing:** PyTorch, Transformers, Flash Attention 2
+- **🔧 Processing:** PyTorch (CPU/GPU), Transformers, SDPA attention (CPU) / Flash Attention 2 (GPU)
 - **🎵 Audio:** SoundFile, NumPy for real-time processing
 
 ### Frontend (TypeScript/React)
@@ -55,9 +55,11 @@
 
 ## 📋 Requirements
 
-### System Tested on
-- **OS:** Windows 11 (Linux/macOS support coming soon, will create a docker image)
-- **GPU:** NVIDIA RTX 3070 (8GB VRAM)
+### System Requirements
+- **OS:** Linux (Ubuntu 24.04 recommended), Windows 11, macOS
+- **CPU:** Multi-core processor recommended (GPU optional, CPU-only deployment supported)
+- **RAM:** 8GB minimum, 16GB recommended
+- **Storage:** 20GB+ free space for models and dependencies
 
 ## 🚀 Quick Start
 
@@ -84,17 +86,17 @@ Quick, minimal instructions are below so you can run the app locally with Docker
 
 ## Quick Start (Docker)
 
-These steps run both frontend and backend in Docker containers. This is the simplest way to get the app running locally.
+These steps run both frontend and backend in Docker containers. This is the simplest way to get the app running locally on Linux, Windows, or macOS.
 
 1) Build images:
 
-```powershell
+```bash
 docker-compose build
 ```
 
 2) Start services:
 
-```powershell
+```bash
 docker-compose up -d
 ```
 
@@ -102,12 +104,43 @@ docker-compose up -d
 
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
+- Health Check: http://localhost:8000/health
 
 Stop services:
 
-```powershell
+```bash
 docker-compose down
 ```
+
+**Note:** The Docker setup is configured for CPU-only deployment. No GPU or NVIDIA Container Toolkit is required.
+
+## Linux Server Deployment
+
+The Docker configuration is optimized for Linux CPU-based servers:
+
+- **Base Images:** Uses standard Ubuntu 24.04 (no CUDA dependencies)
+- **CPU Optimization:** PyTorch CPU-only builds, SDPA attention for CPU efficiency
+- **No GPU Required:** Fully functional on CPU-only servers
+- **Resource Efficient:** Optimized for minimal resource usage
+
+To deploy on a Linux server:
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd TalkMateAI-master
+
+# Build and start services
+docker-compose up -d --build
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+The application will automatically detect CPU-only mode and configure itself accordingly.
 
 ## Prerequisites (only if you run locally without Docker)
 
@@ -118,9 +151,11 @@ docker-compose down
 
 ## Notes & Requirements
 
-- The backend uses PyTorch with CUDA (tested with CUDA 12.4 and an NVIDIA RTX 3070). To use GPU acceleration in Docker, ensure the NVIDIA Container Toolkit is installed.
-- The first run will download model files (Whisper, SmolVLM2, Kokoro). Expect several gigabytes of downloads and allow time for the initial setup.
-- Models and caches are stored in a Docker volume named `huggingface-cache` and will be reused between runs.
+- **CPU Deployment:** The application is configured for CPU-only deployment by default. All Docker images use standard Ubuntu base images without GPU dependencies.
+- **GPU Support:** If you have an NVIDIA GPU and want to use it, you'll need to modify the Dockerfiles to use CUDA base images and install the NVIDIA Container Toolkit. The code automatically detects and uses GPU when available.
+- **Model Downloads:** The first run will download model files (Whisper, SmolVLM2, Kokoro). Expect several gigabytes of downloads and allow time for the initial setup.
+- **Caching:** Models and caches are stored in a Docker volume named `huggingface-cache` and will be reused between runs.
+- **Performance:** CPU-only mode will be slower than GPU-accelerated mode, but fully functional. For best performance, consider using a GPU-enabled server.
 
 Estimated initial download size: ~12–16 GB (Docker base images, Python packages, and model files). Allow ~30–60 minutes on a typical broadband connection for the first build.
 
@@ -148,7 +183,7 @@ uv run uvicorn main:app --reload
 - apps/client — Next.js frontend (TypeScript)
 - apps/server — FastAPI backend (Python)
 - Dockerfile, Dockerfile.backend, Dockerfile.frontend — build targets
-- docker-compose.yml — compose file for local dev with GPU volume
+- docker-compose.yml — compose file for local development with model caching
 
 ## Contact & Source
 
