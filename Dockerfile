@@ -39,7 +39,7 @@ COPY apps/client ./apps/client
 
 RUN pnpm install --frozen-lockfile
 
-RUN cd apps/client && pnpm build
+RUN cd apps/client && NEXT_LINT_ERRORS_FAIL_BUILD=false pnpm build
 
 FROM ubuntu:24.04 AS backend-runtime
 

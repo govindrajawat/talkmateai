@@ -29,12 +29,10 @@ import { useWebSocketContext } from '@/contexts/WebSocketContext';
 
 interface TalkingHeadProps {
   className?: string;
-  cameraStream?: MediaStream | null;
 }
 
 const TalkingHead: React.FC<TalkingHeadProps> = ({
-  className = '',
-  cameraStream
+  className = ''
 }) => {
   const avatarRef = useRef<HTMLDivElement>(null);
   const headRef = useRef<any>(null);
@@ -183,7 +181,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
   // Handle audio from WebSocket
   const handleAudioReceived = useCallback(
     async (
-      base64Audio: string,
+      base64Audio: string, // eslint-disable-line @typescript-eslint/no-explicit-any
       timingData?: any,
       sampleRate = 24000,
       method = 'unknown'
@@ -354,7 +352,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
 
         // Auto-connect to WebSocket
         connect();
-      } catch (error: any) {
+      } catch (error: unknown) {
         setIsLoading(false);
         showStatus(`Failed to initialize: ${error.message}`, 'error');
       }
@@ -371,7 +369,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
         }
       }
     };
-  }, [scriptsLoaded, connect]);
+  }, [scriptsLoaded, connect, selectedMood, selectedAvatar]);
 
   const loadAvatar = async (gender: string = 'F') => {
     const avatarUrls = {
@@ -386,7 +384,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
         avatarMood: selectedMood,
         lipsyncLang: 'en'
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       showStatus(`Failed to load avatar: ${error.message}`, 'error');
     }
   };

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Camera, CameraOff, Move, Maximize2, Minimize2, X } from 'lucide-react';
+import { Camera, CameraOff, Maximize2, Minimize2, X } from 'lucide-react';
 
 interface CameraStreamProps {
   className?: string;
@@ -101,9 +101,12 @@ const CameraStream: React.FC<CameraStreamProps> = ({
       }
 
       setIsStreaming(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error starting camera:', error);
-      setError(`Failed to start camera: ${error.message}`);
+      if (error instanceof Error) {
+        setError(`Failed to start camera: ${error.message}`);
+      }
+      setError(`Failed to start camera: Unknown error`);
       setIsStreaming(false);
     }
   }, [selectedDeviceId]);

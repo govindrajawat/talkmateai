@@ -44,9 +44,8 @@ interface VoiceActivityDetectorProps {
 const VoiceBlob: React.FC<{
   energy: number;
   isActive: boolean;
-  threshold: number;
   transmissionMode: 'audio' | 'audio+image' | 'none';
-}> = ({ energy, isActive, threshold, transmissionMode }) => {
+}> = ({ energy, threshold, transmissionMode }) => {
   const [animationTime, setAnimationTime] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
 
