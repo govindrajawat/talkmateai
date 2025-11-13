@@ -257,7 +257,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
         // Add to queue
         audioQueueRef.current.push({
           buffer: audioBuffer,
-          timingData: timingData,
+          timingData: timingData as TimingData | undefined,
           duration: audioBuffer.duration,
           method: method,
           image: null, // This is received audio, no image is associated with it here
