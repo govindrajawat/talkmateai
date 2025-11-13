@@ -1,4 +1,4 @@
-FROM ubuntu:24.04 AS backend-builder
+FROM ubuntu:22.04 AS backend-builder
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -43,7 +43,7 @@ ENV NEXT_DISABLE_TYPECHECK=1
 
 RUN cd apps/client && NEXT_PUBLIC_DISABLE_LINT=1 NEXT_PUBLIC_DISABLE_TYPECHECK=1 pnpm exec next build --no-lint
 
-FROM ubuntu:24.04 AS backend-runtime
+FROM ubuntu:22.04 AS backend-runtime
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -92,7 +92,7 @@ EXPOSE 3000
 
 CMD ["sh", "-c", "cd /app/apps/client && npm start"]
 
-FROM ubuntu:24.04 AS production
+FROM ubuntu:22.04 AS production
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
