@@ -32,14 +32,23 @@ interface TalkingHeadProps {
   cameraStream: MediaStream | null;
 }
 
+interface AudioQueueItem {
+  buffer: AudioBuffer;
+  timingData?: unknown;
+  duration: number;
+  method: string;
+  image: string | null;
+}
+
 const TalkingHead: React.FC<TalkingHeadProps> = ({
   className = '',
   cameraStream
 }) => {
   const avatarRef = useRef<HTMLDivElement>(null);
-  const headRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const headRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const audioQueueRef = useRef<any[]>([]); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const audioQueueRef = useRef<AudioQueueItem[]>([]);
   const isPlayingAudioRef = useRef(false);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -348,7 +357,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
           avatarMood: selectedMood,
           lipsyncLang: 'en'
         });
-      } catch (error: any) {
+      } catch (error) {
         if (error instanceof Error) {
           showStatus(`Failed to load avatar: ${error.message}`, 'error');
         } else {
@@ -414,7 +423,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
 
         // Auto-connect to WebSocket
         connect();
-      } catch (error: any) {
+      } catch (error) {
         setIsLoading(false);
         if (error instanceof Error) {
           showStatus(`Failed to initialize: ${error.message}`, 'error');
