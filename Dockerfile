@@ -17,8 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --upgrade pip && \
-    pip3 install --break-system-packages uv
+RUN pip3 install --break-system-packages --upgrade pip uv
 
 WORKDIR /app
 
