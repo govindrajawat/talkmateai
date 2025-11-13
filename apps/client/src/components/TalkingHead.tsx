@@ -105,37 +105,6 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
     }
   }, []);
 
-  // Function to capture a frame from the camera stream
-  const captureFrame = useCallback(async (): Promise<string | null> => {
-    if (!cameraStream) return null;
-
-    const videoTrack = cameraStream.getVideoTracks()[0];
-    if (!videoTrack) return null;
-
-    try {
-      const imageCapture = new ImageCapture(videoTrack);
-      const blob = await imageCapture.grabFrame();
-
-      // Convert blob to base64
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          if (typeof reader.result === 'string') {
-            // Remove the data URL prefix
-            resolve(reader.result.split(',')[1]);
-          } else {
-            reject(new Error('Failed to read blob as base64 string.'));
-          }
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    } catch (error) {
-      console.error('Error capturing frame:', error);
-      return null;
-    }
-  }, [cameraStream]);
-
   // Convert base64 to ArrayBuffer
   const base64ToArrayBuffer = useCallback((base64: string) => {
     const binaryString = atob(base64);
@@ -354,7 +323,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
           avatarMood: selectedMood,
           lipsyncLang: 'en'
         });
-      } catch (error) {
+      } catch (error: unknown) {
         if (error instanceof Error) {
           showStatus(`Failed to load avatar: ${error.message}`, 'error');
         } else {
@@ -420,7 +389,7 @@ const TalkingHead: React.FC<TalkingHeadProps> = ({
 
         // Auto-connect to WebSocket
         connect();
-      } catch (error) {
+      } catch (error: unknown) {
         setIsLoading(false);
         if (error instanceof Error) {
           showStatus(`Failed to initialize: ${error.message}`, 'error');
